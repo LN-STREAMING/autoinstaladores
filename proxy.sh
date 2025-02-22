@@ -1,23 +1,26 @@
 #!/bin/bash
 
-# Atualizar pacotes e instalar Squid e Apache2-utils
-echo "Atualizando pacotes e instalando Squid..."
-sudo apt update && sudo apt install squid apache2-utils -y
+# Função para exibir mensagens formatadas
+log() {
+    echo -e "\e[1;32m[INFO] $1\e[0m"
+}
 
-# Criar usuário e senha para autenticação
-echo "Criando usuário para o Squid..."
-sudo htpasswd -c /etc/squid/passwords ikariam <<EOF
-mairaki
-mairaki
-EOF
+# Atualizar pacotes e instalar Squid e Apache2-utils
+log "Atualizando pacotes e instalando Squid..."
+sudo apt update -y && sudo apt install -y squid apache2-utils
+
+# Criar usuário e senha para autenticação sem interação manual
+log "Criando usuário para o Squid..."
+echo "ikariam:mairaki" | sudo tee /etc/squid/passwords > /dev/null
+sudo chmod 640 /etc/squid/passwords
 
 # Criar backup da configuração original do Squid
-echo "Fazendo backup da configuração original do Squid..."
+log "Fazendo backup da configuração original do Squid..."
 sudo cp /etc/squid/squid.conf /etc/squid/squid.conf.bak
 
 # Criar nova configuração do Squid
-echo "Configurando Squid..."
-sudo bash -c 'cat > /etc/squid/squid.conf <<EOF
+log "Configurando Squid..."
+sudo tee /etc/squid/squid.conf > /dev/null <<EOF
 http_port 12554
 acl all src all
 http_access allow all
@@ -42,10 +45,10 @@ deny_info ERR_ACCESS_DENIED all
 acl Safe_ports port 80
 acl Safe_ports port 443
 http_access deny !Safe_ports
-EOF'
+EOF
 
 # Reiniciar o serviço do Squid
-echo "Reiniciando Squid..."
+log "Reiniciando Squid..."
 sudo systemctl restart squid
 
-echo "Instalação concluída! O Squid está rodando na porta 12554."
+log "Instalação concluída! O Squid está rodando na porta 12554."
