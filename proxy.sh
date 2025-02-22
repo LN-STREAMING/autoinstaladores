@@ -11,7 +11,9 @@ sudo apt update -y && sudo apt install -y squid apache2-utils
 
 # Criar usuário e senha para autenticação sem interação manual
 log "Criando usuário para o Squid..."
-echo "ikariam:mairaki" | sudo tee /etc/squid/passwords > /dev/null
+USER_SQUID="ikariam"
+PASS_SQUID="mairaki"
+echo "$USER_SQUID:$PASS_SQUID" | sudo tee /etc/squid/passwords > /dev/null
 sudo chmod 640 /etc/squid/passwords
 
 # Criar backup da configuração original do Squid
@@ -20,8 +22,9 @@ sudo cp /etc/squid/squid.conf /etc/squid/squid.conf.bak
 
 # Criar nova configuração do Squid
 log "Configurando Squid..."
+PORT_SQUID="12554"
 sudo tee /etc/squid/squid.conf > /dev/null <<EOF
-http_port 12554
+http_port $PORT_SQUID
 acl all src all
 http_access allow all
 
@@ -51,4 +54,14 @@ EOF
 log "Reiniciando Squid..."
 sudo systemctl restart squid
 
-log "Instalação concluída! O Squid está rodando na porta 12554."
+# Obter o IP público da máquina
+IP_MACHINE=$(curl -s ifconfig.me)
+
+# Exibir informações finais
+log "Instalação concluída! Detalhes do proxy:"
+echo -e "\e[1;33m━━━━━━━━━━━━━━━━━━━━━━━━━━━\e[0m"
+echo -e "\e[1;32mIP da Máquina:\e[0m $IP_MACHINE"
+echo -e "\e[1;32mPorta do Squid:\e[0m $PORT_SQUID"
+echo -e "\e[1;32mUsuário:\e[0m $USER_SQUID"
+echo -e "\e[1;32mSenha:\e[0m $PASS_SQUID"
+echo -e "\e[1;33m━━━━━━━━━━━━━━━━━━━━━━━━━━━\e[0m"
