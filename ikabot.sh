@@ -5,9 +5,10 @@ show_progress() {
     local duration=$1
     local progress=0
     local bar_length=30
+    local increment=$(bc <<< "scale=2; $duration/$bar_length")
 
     while [ $progress -lt $bar_length ]; do
-        sleep $(echo "$duration/$bar_length" | bc -l)
+        sleep $increment
         progress=$((progress + 1))
         echo -ne "["
         for ((i = 0; i < progress; i++)); do echo -ne "#"; done
@@ -22,8 +23,7 @@ export DEBIAN_FRONTEND=noninteractive
 export NEEDRESTART_MODE=a
 
 echo "🔄 Atualizando pacotes..."
-sudo apt update -y &>/dev/null
-sudo apt upgrade -y &>/dev/null
+sudo apt update -y &>/dev/null && sudo apt upgrade -y &>/dev/null
 show_progress 6
 
 echo "📦 Instalando dependências..."
@@ -32,11 +32,17 @@ show_progress 5
 
 echo "📥 Baixando e instalando o Ikabot..."
 if [ ! -d "ikabot" ]; then
-    sudo git clone https://github.com/Ikabot-Collective/ikabot &>/dev/null
+    sudo git clone -q https://github.com/Ikabot-Collective/ikabot
 fi
-cd ikabot
-sudo python3 -m pip install --user -e . &>/dev/null
-show_progress 4
+
+if [ -d "ikabot" ]; then
+    cd ikabot
+    sudo python3 -m pip install -e . &>/dev/null
+    show_progress 4
+else
+    echo "❌ Erro ao clonar o repositório Ikabot. Verifique sua conexão e tente novamente."
+    exit 1
+fi
 
 # Solicitar email e senha do usuário
 read -p "✉️  Digite seu e-mail do Ikabot: " email
@@ -45,7 +51,7 @@ echo ""
 
 # Executar Ikabot com os dados informados
 echo "🚀 Iniciando Ikabot..."
-python3 -m ikabot "$email" "$senha" &>/dev/null
+python3 -m ikabot "$email" "$senha"
 show_progress 3
 
 echo "✅ Instalação concluída! O Ikabot está rodando."
