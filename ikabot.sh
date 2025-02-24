@@ -1,36 +1,39 @@
 #!/bin/bash
 
-# Configuração para evitar prompts interativos
+# Definir modo silencioso para evitar prompts interativos
 export DEBIAN_FRONTEND=noninteractive
 export NEEDRESTART_MODE=a
 
-# Atualizar pacotes
+# Atualizar pacotes sem exibir saídas
 echo "Atualizando pacotes..."
-sudo apt update && sudo apt upgrade -y
+sudo apt update -y &>/dev/null
+sudo apt upgrade -y &>/dev/null
 
-# Instalar pacotes necessários
+# Instalar dependências necessárias sem exibir saídas
 echo "Instalando dependências..."
-sudo apt install -y python3 python3-dev python3-pip python3-venv gcc git wget
+sudo apt install -y python3 python3-dev python3-pip python3-venv gcc git wget &>/dev/null
 
-# Baixar e instalar o get-pip.py
-echo "Baixando e instalando o gerenciador de pacotes pip..."
-wget -q https://bootstrap.pypa.io/get-pip.py
-sudo python3 get-pip.py
-sudo pip3 install psutil
+# Baixar e instalar o get-pip.py silenciosamente
+echo "Instalando gerenciador de pacotes..."
+wget -q https://bootstrap.pypa.io/get-pip.py -O /tmp/get-pip.py
+sudo python3 /tmp/get-pip.py &>/dev/null
+sudo pip3 install psutil &>/dev/null
 
-# Clonar o repositório do Ikabot e instalar
+# Clonar repositório do Ikabot
 echo "Baixando e instalando o Ikabot..."
-sudo git clone https://github.com/Ikabot-Collective/ikabot
+if [ ! -d "ikabot" ]; then
+    sudo git clone https://github.com/Ikabot-Collective/ikabot &>/dev/null
+fi
 cd ikabot
-sudo python3 -m pip install --user -e .
+sudo python3 -m pip install --user -e . &>/dev/null
 
 # Solicitar email e senha do usuário
 read -p "Digite seu e-mail do Ikabot: " email
 read -s -p "Digite sua senha do Ikabot: " senha
 echo ""
 
-# Executar o Ikabot com as credenciais fornecidas
-echo "Iniciando o Ikabot..."
-python3 -m ikabot "$email" "$senha"
+# Executar Ikabot com os dados informados
+echo "Iniciando Ikabot..."
+python3 -m ikabot "$email" "$senha" &>/dev/null
 
-echo "Instalação concluída! O Ikabot está rodando."
+echo "✅ Instalação concluída! O Ikabot está rodando."
