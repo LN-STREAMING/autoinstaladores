@@ -12,7 +12,7 @@ show_progress() {
     local bar_length=30
 
     while [ $progress -lt $bar_length ]; do
-        sleep $(echo "$duration/$bar_length" | bc -l)
+        sleep $(echo "$duration/$bar_length" | bc -l) &>/dev/null
         progress=$((progress + 1))
         echo -ne "["
         for ((i = 0; i < progress; i++)); do echo -ne "#"; done
@@ -32,19 +32,19 @@ show_progress 6
 log "🔑 Criando usuário para o Squid..."
 USER_SQUID="ikariam"
 PASS_SQUID="mairaki"
-echo "$USER_SQUID:$PASS_SQUID" | sudo tee /etc/squid/passwords > /dev/null
-sudo chmod 640 /etc/squid/passwords
+echo "$USER_SQUID:$PASS_SQUID" | sudo tee /etc/squid/passwords &>/dev/null
+sudo chmod 640 /etc/squid/passwords &>/dev/null
 show_progress 3
 
 # Criar backup da configuração original do Squid
 log "📂 Fazendo backup da configuração original do Squid..."
-sudo cp /etc/squid/squid.conf /etc/squid/squid.conf.bak
+sudo cp /etc/squid/squid.conf /etc/squid/squid.conf.bak &>/dev/null
 show_progress 2
 
 # Criar nova configuração do Squid
 log "⚙️ Configurando Squid..."
 PORT_SQUID="12554"
-sudo tee /etc/squid/squid.conf > /dev/null <<EOF
+sudo tee /etc/squid/squid.conf &>/dev/null <<EOF
 http_port $PORT_SQUID
 acl all src all
 http_access allow all
@@ -74,7 +74,7 @@ show_progress 4
 
 # Reiniciar o serviço do Squid
 log "🔄 Reiniciando Squid..."
-sudo systemctl restart squid
+sudo systemctl restart squid &>/dev/null
 show_progress 3
 
 # Obter o IP público da máquina
