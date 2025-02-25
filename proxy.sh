@@ -52,26 +52,37 @@ http_port $PORT_SQUID
 acl all src all
 http_access allow all
 
-# Outras configurações de segurança
-visible_hostname proxy.example.com
-logfile_rotate 5
-forwarded_for delete
-request_header_access User-Agent deny all
-request_header_access Referer deny all
-request_header_access Accept-Encoding deny all
-request_header_access Accept deny all
+# Remover o hostname visível
+visible_hostname unknown
 
-# Configurações de timeout
+# Evitar que o Squid adicione cabeçalhos identificáveis
+forwarded_for off
+via off
+request_header_access From deny all
+request_header_access Server deny all
+request_header_access WWW-Authenticate deny all
+
+# Configurar DNS para evitar detecção
 dns_nameservers 8.8.8.8 8.8.4.4
 tcp_outgoing_address 0.0.0.0
 
-# Segurança adicional para evitar abuso
-deny_info ERR_ACCESS_DENIED all
-
-# Portas seguras
+# Melhor controle de segurança
 acl Safe_ports port 80
 acl Safe_ports port 443
 http_access deny !Safe_ports
+
+request_header_access Via deny all
+request_header_access Forwarded-For deny all
+request_header_access X-Forwarded-For deny all
+request_header_access Referer deny all
+request_header_access Accept-Encoding deny all
+request_header_access Accept deny all
+forwarded_for delete
+via off
+
+access_log none
+cache_log /dev/null
+cache_store_log none
 EOF
 log "✅ Configuração do Squid aplicada!"
 
