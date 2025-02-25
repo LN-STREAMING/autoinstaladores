@@ -1,5 +1,7 @@
 #!/bin/bash
 
+clear
+
 # Função para exibir mensagens formatadas
 log() {
     echo -e "\e[1;32m[INFO] $1\e[0m"
