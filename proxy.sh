@@ -51,26 +51,37 @@ http_port $PORT_SQUID
 acl all src all
 http_access allow all
 
-# Outras configurações de segurança
-visible_hostname proxy.example.com
-logfile_rotate 5
-forwarded_for delete
-request_header_access User-Agent deny all
+# Ocultar que é um proxy
+via off
+forwarded_for off
+request_header_access X-Forwarded-For deny all
+request_header_access Via deny all
 request_header_access Referer deny all
-request_header_access Accept-Encoding deny all
+request_header_access User-Agent allow all
+request_header_access Accept-Encoding allow all
+request_header_access Cache-Control deny all
+request_header_access Pragma deny all
 request_header_access Accept deny all
+request_header_access If-Modified-Since deny all
+request_header_access Keep-Alive deny all
+request_header_access Proxy-Authorization deny all
+request_header_access Proxy-Authenticate deny all
+request_header_access All deny all
 
-# Configurações de timeout
+# Melhorias na segurança
+detect_broken_pconn on
+visible_hostname localhost
+spoof_client_ip off
+client_db off
+
+# Endereços DNS
 dns_nameservers 8.8.8.8 8.8.4.4
-tcp_outgoing_address 0.0.0.0
 
-# Segurança adicional para evitar abuso
-deny_info ERR_ACCESS_DENIED all
-
-# Portas seguras
-acl Safe_ports port 80
-acl Safe_ports port 443
-http_access deny !Safe_ports
+# Logs desativados
+access_log none
+cache_log /dev/null
+cache_store_log none
+logfile_rotate 0
 EOF
 show_progress 4
 
