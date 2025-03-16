@@ -1,15 +1,14 @@
 #!/bin/bash
 
-# Atualiza pacotes e instala o Squid
-apt update -y && apt install -y squid apache2-utils
+clear
+echo "Atualizando pacotes..."
+apt update -y > /dev/null 2>&1 && apt install -y squid apache2-utils > /dev/null 2>&1
+echo "Pacotes instalados!"
 
-# Define a porta do Squid
 SQUID_PORT="12554"
-
-# Caminho do arquivo de configuração do Squid
 SQUID_CONF="/etc/squid/squid.conf"
 
-# Limpa a configuração antiga e adiciona a nova
+echo "Configurando Squid..."
 cat <<EOF > $SQUID_CONF
 http_port $SQUID_PORT
 
@@ -48,18 +47,17 @@ auth_param basic realm Proxy
 acl authenticated proxy_auth REQUIRED
 http_access allow authenticated
 EOF
+echo "Configuração aplicada!"
 
-# Cria usuário e senha
-htpasswd -c -b /etc/squid/passwd ikariam mairaki
+echo "Criando usuário de autenticação..."
+htpasswd -c -b /etc/squid/passwd ikariam mairaki > /dev/null 2>&1
+echo "Usuário criado!"
 
-# Reinicia o Squid
-systemctl restart squid
-systemctl enable squid
+echo "Reiniciando Squid..."
+systemctl restart squid && systemctl enable squid > /dev/null 2>&1
+echo "Squid iniciado!"
 
-# Obtém o IP do servidor
 IP=$(curl -s ifconfig.me)
-
-# Exibe os dados de conexão
 echo "--------------------------------------"
 echo "Squid Proxy instalado com sucesso!"
 echo "Use os seguintes dados para conexão:"
